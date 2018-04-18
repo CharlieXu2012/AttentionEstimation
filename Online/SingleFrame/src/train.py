@@ -50,8 +50,6 @@ def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len,
             for i, data in enumerate(dataloaders[phase]):
                 # get the inputs
                 inputs, labels = data['X'], data['y']
-                print('inputs:', inputs.shape)
-                print('labels:', labels.shape)
                 # wrap in Variable
                 if gpu:
                     inputs = Variable(inputs.cuda())
@@ -64,13 +62,10 @@ def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len,
                 optimizer.zero_grad()
                 # pass through network
                 outputs = net.forward(inputs)
-                print('outputs:', outputs.shape)
                 # loss + prediction
                 loss = criterion(outputs, labels)
-                print('loss:', loss)
                 _, pred = torch.max(outputs.data, 1)
                 correct = torch.sum(pred == labels.data)
-                print('correct:', correct)
 
                 # back-prop + optimize in training phase
                 if phase == 'Train':
