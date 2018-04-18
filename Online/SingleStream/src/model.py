@@ -95,8 +95,8 @@ def main():
     model = 'VGGNet11'
     rnn_hidden = 32
     rnn_layers = 1
-#    net = SingleStream(model, rnn_hidden, rnn_layers, pretrained=False)
-#    print(net)
+    net = SingleStream(model, rnn_hidden, rnn_layers, pretrained=False)
+    print(net)
 
     # test model
     gpu = torch.cuda.is_available()
@@ -116,9 +116,9 @@ def main():
     for i in range(sequence_len-window_size):
         inp = inputs[i:i+window_size]
         print('inp:', inp.shape)
-    # pass through network
-#    outputs = net.forward(inputs)
-#    print('outputs:', outputs.size())
+        # pass through network
+        output = net.forward(inp)
+        print('output:', output.size())
 
 if __name__ == '__main__':
     main()
