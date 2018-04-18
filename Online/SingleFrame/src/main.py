@@ -42,8 +42,8 @@ def main():
     """Main Function."""
     # dataloader parameters
     gpu = torch.cuda.is_available()
-    train_path = '/home/gary/datasets/accv/labels/train_data.txt'
-    valid_path = '/home/gary/datasets/accv/labels/valid_data.txt'
+    train_path = '../../../data/train_data.txt'
+    valid_path = '../../../data/valid_data.txt'
     batch_size = 2
     sequence_len = 5
     num_workers = 1
