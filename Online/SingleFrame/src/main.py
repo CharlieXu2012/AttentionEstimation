@@ -44,12 +44,12 @@ def main():
     gpu = torch.cuda.is_available()
     train_path = 'data/train_data.txt'
     valid_path = 'data/valid_data.txt'
-    batch_size = 2
-    sequence_len = 5
-    num_workers = 1
+    batch_size = 32
+    sequence_len = 50
+    num_workers = 2
     # training parameters
-    max_epochs = 2
-    learning_rate = 1e-3
+    max_epochs = 200
+    learning_rate = 1e-4
     criterion = nn.CrossEntropyLoss()
 
     # get dataloaders    
