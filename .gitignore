@@ -1,2 +1,4 @@
 data/positive
 data/negative
+**__pycache__/
+*.swp
