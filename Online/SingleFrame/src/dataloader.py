@@ -28,7 +28,6 @@ class ImageDataset(Dataset):
             data = np.reshape(data, (-1, 2))
         
         self.data = data
-        self.path_pre = labels_path[:labels_path.rfind('/')+1]
         self.sequence_len = sequence_len
         self.transform = transform
         self.cap = cv2.VideoCapture()
@@ -38,7 +37,7 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, idx):
         y = int(self.data[idx, 1]) - 1
-        video_path = self.path_pre + self.data[idx, 0]
+        video_path = 'data/' + self.data[idx, 0]
         # open video
         self.cap.open(video_path)
         # random index (counting backwards from last frame)
@@ -167,9 +166,9 @@ def main():
     from torchvision import utils
 
     # data paths
-    train_path = '../../../data/train_data.txt'
-    valid_path = '../../../data/valid_data.txt'
-    test_path = '../../../data/test_data.txt'
+    train_path = 'data/train_data.txt'
+    valid_path = 'data/valid_data.txt'
+    test_path = '.data/test_data.txt'
     # hyper-parameters
     batch_size = 24
     sequence_len = 50  # counting backwards from last frame

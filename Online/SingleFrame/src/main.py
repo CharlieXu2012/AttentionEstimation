@@ -36,14 +36,14 @@ def plot_data(losses, accuracies, name):
     ax2.legend(loc='upper left')
 
     fig.tight_layout()
-    fig.savefig('../outputs/' + name)
+    fig.savefig(name)
 
 def main():
     """Main Function."""
     # dataloader parameters
     gpu = torch.cuda.is_available()
-    train_path = '../../../data/train_data.txt'
-    valid_path = '../../../data/valid_data.txt'
+    train_path = 'data/train_data.txt'
+    valid_path = 'data/valid_data.txt'
     batch_size = 2
     sequence_len = 5
     num_workers = 1
@@ -65,9 +65,9 @@ def main():
             sequence_len, criterion, optimizer, max_epochs, gpu)
     print('Best Validation Acc:', val_acc)
     # plot
-    plot_data(losses, accuracies, 'plots.png')
+    plot_data(losses, accuracies, 'outputs/SingleFramePlots.png')
     # save network
-    torch.save(net.state_dict(), '../outputs/net_params.pkl')
+    torch.save(net.state_dict(), 'outputs/SingleFrameParams.pkl')
 
 if __name__ == '__main__':
     main()
