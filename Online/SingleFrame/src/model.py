@@ -6,8 +6,7 @@ class SingleFrame(nn.Module):
     """Single Frame Classifier."""
     def __init__(self):
         super().__init__()
-        #TODO change to pretrained vgg19_bn
-        self.cnn = models.vgg11()
+        self.cnn = models.vgg19_bn(pretrained=True)
         # number of features in fc1
         num_ftrs = self.cnn.classifier[3].in_features
         # remove last two fc layers (+ ReLU and Dropout layers)
