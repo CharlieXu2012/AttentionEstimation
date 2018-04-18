@@ -4,7 +4,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from dataloader import get_loaders
 from train import train_network
-import model
+from model import SingleFrame
 
 def plot_data(losses, accuracies, name):
     """Plot training and validation statistics.
@@ -57,7 +57,7 @@ def main():
             batch_size, sequence_len, num_workers, gpu)
 
     # create network and optimizier
-    net = model.SingleFrame()
+    net = SingleFrame()
     print(net)
     optimizer = torch.optim.Adam(net.parameters(), learning_rate)
     # train the network
