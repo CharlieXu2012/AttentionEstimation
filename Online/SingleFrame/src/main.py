@@ -28,7 +28,7 @@ def main():
             batch_size, sequence_len, num_workers, gpu)
 
     # create network and optimizier
-    net = SingleFrame()
+    net = SingleFrame('VGGNet19')
     print(net)
     optimizer = torch.optim.Adam(net.parameters(), learning_rate)
     # train the network
