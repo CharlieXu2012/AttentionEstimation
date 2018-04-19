@@ -97,10 +97,10 @@ def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len,
     # print elapsed time
     time_elapsed = time.time() - start
     print()
-    print('Training Complete in {:.0f}h {:.9f}m'.format(
+    print('Training Complete in {:.0f}h {:.0f}m'.format(
         time_elapsed // (60*60), time_elapsed // 60 % 60
         ))
     # load best model weights
     net.load_state_dict(best_model_wts)
-    return network, best_acc, losses, accuracies
+    return net, best_acc, losses, accuracies
 
