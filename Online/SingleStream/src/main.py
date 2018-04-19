@@ -4,7 +4,9 @@ import torch.nn as nn
 from dataloader import get_loaders
 from model import SingleStream
 from train import train_network
-from utils import plot_data
+import sys
+sys.path.insert(0, 'utils')
+from plotting import plot_data
 
 def main():
     """Main Function."""

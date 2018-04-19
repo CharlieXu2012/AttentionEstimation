@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 from dataloader import get_loaders
 from train import train_network
 from model import SingleFrame
-from utils import plot_data
+import sys
+sys.path.insert(0, 'utils')
+from plotting import plot_data
 
 def main():
     """Main Function."""
@@ -13,7 +15,7 @@ def main():
     gpu = torch.cuda.is_available()
     train_path = 'data/train_data.txt'
     valid_path = 'data/valid_data.txt'
-    batch_size = 32
+    batch_size = 20
     sequence_len = 50
     num_workers = 2
     # training parameters
