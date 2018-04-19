@@ -30,8 +30,9 @@ def main():
     print(net)
     optimizer = torch.optim.Adam(net.parameters(), learning_rate)
     # train the network
-    net, val_acc = train_network(net, dataloaders, dataset_sizes, batch_size, 
-            sequence_len, criterion, optimizer, max_epochs, gpu)
+    net, val_acc, losses, accuracies = train_network(net, dataloaders, 
+            dataset_sizes, batch_size, sequence_len, criterion, optimizer, 
+            max_epochs, gpu)
     print('Best Validation Acc:', val_acc)
     # plot
     plot_data(losses, accuracies, 'outputs/SingleFramePlots.png')
