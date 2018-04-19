@@ -4,7 +4,7 @@ import copy
 import torch
 from torch.autograd import Variable
 
-def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len-1,
+def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len,
         window_size, criterion, optimizer, max_epochs, gpu):
     """Train network.
 
