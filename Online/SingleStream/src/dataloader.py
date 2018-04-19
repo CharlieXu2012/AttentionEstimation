@@ -6,13 +6,82 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 from torchvision import transforms
 
+class FlowDataset(Dataset):
+    """Flow Features for Attention Level Dataset.
+    Args:
+        labels_path (string):   path to text file with annotations
+        sequence_len (int):     length of video clip
+        transform (callable):   transform to be applied on video sequence
+
+    Returns:
+        torch.utils.data.Dataset:   dataset object
+    """ 
+    def __init__(self, labels_path, sequence_len, transform=None):
+        # read video paths and labels
+        with open(labels_path, 'r') as f:
+            data = f.read()
+            data = data.split()
+            data = np.array(data)
+            data = np.reshape(data, (-1, 2))
+        
+        self.data = data
+        self.sequence_len = sequence_len
+        self.transform = transform
+        self.cap = cv2.VideoCapture()
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        # create list to hold video data
+        X = []
+        y = int(self.data[idx, 1]) - 1
+        video_path = 'data/' + self.data[idx, 0]
+        # open video
+        self.cap.open(video_path)
+        # set to beginning of sequence
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 100-self.sequence_len)
+        # read initial frame
+        _, frame1 = self.cap.read()
+        frame1 = cv2.resize(frame1, (256,256))
+        frame1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+        for i in range(self.sequence_len-1):
+            _, frame2 = self.cap.read()
+            frame2 = cv2.resize(frame2, (256,256))
+            frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+            # compute flow
+            flow = cv2.calcOpticalFlowFarneback(frame1, frame2, None,
+                    0.5, 3, 15, 3, 5, 1.2, 0)
+            # compute flow mag
+            mag, _ = cv2.cartToPolar(flow[:,:,0], flow[:,:,1])
+            # normalize
+            flow[:,:,0] = cv2.normalize(flow[:,:,0], None, 0, 255,
+                    cv2.NORM_MINMAX)
+            flow[:,:,1] = cv2.normalize(flow[:,:,1], None, 0, 255,
+                    cv2.NORM_MINMAX)
+            mag = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
+            # normalize between 0-1
+            X.append(np.stack((flow[:,:,0], flow[:,:,1], mag),axis=2))
+            frame1 = frame2
+
+        # convert to numpy array
+        X = np.array(X)
+        # transform data
+        if self.transform:
+            X = self.transform(X)
+        # reformat [numSeqs x numChannels x Height x Width]
+        X = np.transpose(X, (0,3,1,2))
+        # store in sample
+        sample = {'X': X, 'y': y}
+        return sample
+
 class AppearanceDataset(Dataset):
     """Appearance Features for Attention Level Dataset.
 
     Args:
         labels_path (string):   path to text file with annotations
         sequence_len (int):     length of video clip
-        transform (callable):   transform to be applied on image
+        transform (callable):   transform to be applied on video sequence
         
     Returns:
         torch.utils.data.Dataset:   dataset object
@@ -243,7 +312,7 @@ def count_labels(data_path):
 
     return counts
 
-def get_loaders(train_path, valid_path, batch_size, sequence_len,
+def get_loaders(train_path, valid_path, batch_size, sequence_len, flow,
         num_workers, gpu):
     """Return dictionary of torch.utils.data.DataLoader.
 
@@ -253,6 +322,7 @@ def get_loaders(train_path, valid_path, batch_size, sequence_len,
         batch_size (int):       number of instances in batch
         sequence_len (int):     number of frames to keep in video (counting
                                     from last frame)
+        flow (bool):            use flow or appearance dataset
         num_workers (int):      number of subprocesses used for data loading
         gpu (bool):             presence of gpu
 
@@ -277,12 +347,20 @@ def get_loaders(train_path, valid_path, batch_size, sequence_len,
             }
 
     # create dataset object
-    datasets = {
-            'Train': AppearanceDataset(train_path, sequence_len,
-                data_transforms['Train']),
-            'Valid': AppearanceDataset(valid_path, sequence_len,
-                data_transforms['Valid'])
-            }
+    if flow:
+        datasets = {
+                'Train': FlowDataset(train_path, sequence_len,
+                    data_transforms['Train']),
+                'Valid': FlowDataset(valid_path, sequence_len,
+                    data_transforms['Valid'])
+                }
+    else:
+        datasets = {
+                'Train': AppearanceDataset(train_path, sequence_len,
+                    data_transforms['Train']),
+                'Valid': AppearanceDataset(valid_path, sequence_len,
+                    data_transforms['Valid'])
+                }
 
     # dataset sizes
     dataset_sizes = {'Train': len(datasets['Train']),
@@ -320,7 +398,7 @@ def main():
     sequence_len = 24  # counting backwards from last frame
     
     dataloaders, dataset_sizes = get_loaders(train_path, valid_path, 
-            batch_size, sequence_len, 0, False)
+            batch_size, sequence_len, flow=True, num_workers=0, gpu=False)
     print('Dataset Sizes:')
     print(dataset_sizes)
 
@@ -330,7 +408,7 @@ def main():
         std = np.array([0.229, 0.224, 0.225])
         grid = std * grid + mean
         grid = np.clip(grid, 0, 1)
-        plt.imshow(grid)
+        plt.imshow(grid, cmap='gray')
         plt.xticks([]), plt.yticks([])
         plt.tight_layout()
         plt.show()
