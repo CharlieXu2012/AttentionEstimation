@@ -420,7 +420,5 @@ def main():
     grid = utils.make_grid(data[0])
     imshow(grid)
 
-
-
 if __name__ == '__main__':
     main()

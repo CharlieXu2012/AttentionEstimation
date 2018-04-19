@@ -13,6 +13,7 @@ def main():
     valid_path = 'data/valid_data.txt'
     batch_size = 2
     sequence_len = 10
+    flow = True
     num_workers = 2
     # network parameters
     model = 'VGGNet11'
@@ -26,7 +27,7 @@ def main():
 
     # get loaders
     dataloaders, dataset_sizes = get_loaders(train_path, valid_path, batch_size,
-            sequence_len, num_workers, gpu)
+            sequence_len, flow, num_workers, gpu)
 
     # create network and optimizer
     net = SingleStream(model, rnn_hidden, rnn_layers, pretrained=False)
