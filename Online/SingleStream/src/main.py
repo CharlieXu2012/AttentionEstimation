@@ -4,6 +4,7 @@ import torch.nn as nn
 from dataloader import get_loaders
 from model import SingleStream
 from train import train_network
+from utils import plot_data
 
 def main():
     """Main Function."""
@@ -34,8 +35,21 @@ def main():
     print(net)
     optimizer = torch.optim.Adam(net.parameters(), learning_rate)
     # train the network
-    net, val_acc = train_network(net, dataloaders, dataset_sizes, batch_size,
-            sequence_len, window_size, criterion, optimizer, max_epochs, gpu)
+    net, val_acc, losses, accuracies = train_network(net, dataloaders, 
+            dataset_sizes, batch_size, sequence_len, window_size, criterion, 
+            optimizer, max_epochs, gpu)
+    # plot
+    if flow:
+        s_plots = 'outputs/SingleStreamFlowPlots.png'
+        s_params = 'outputs/SingleStreamFlowParams.pkl'
+    else:
+        s_plots = 'outputs/SingleStreamAppPlots.png'
+        s_params = 'outputs/SingleStreamAppParams.pkl'
+
+    # plot
+    plot_data(losss, accuracies, s_plots)
+    # save network
+    torch.save(net.state_dict(), s_params)
 
 
 if __name__ == '__main__':
