@@ -37,9 +37,9 @@ def main():
             max_epochs, gpu)
     print('Best Validation Acc:', val_acc)
     # plot
-    plot_data(losses, accuracies, 'outputs/SingleFramePlots.png')
+    plot_data(losses, accuracies, 'outputs/online/SingleFramePlots.png')
     # save network
-    torch.save(net.state_dict(), 'outputs/SingleFrameParams.pkl')
+    torch.save(net.state_dict(), 'outputs/online/SingleFrameParams.pkl')
 
 if __name__ == '__main__':
     main()

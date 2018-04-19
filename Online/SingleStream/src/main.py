@@ -42,11 +42,11 @@ def main():
             optimizer, max_epochs, gpu)
     # plot
     if flow:
-        s_plots = 'outputs/SingleStreamFlowPlots.png'
-        s_params = 'outputs/SingleStreamFlowParams.pkl'
+        s_plots = 'outputs/online/SingleStreamFlowPlots.png'
+        s_params = 'outputs/online/SingleStreamFlowParams.pkl'
     else:
-        s_plots = 'outputs/SingleStreamAppPlots.png'
-        s_params = 'outputs/SingleStreamAppParams.pkl'
+        s_plots = 'outputs/online/SingleStreamAppPlots.png'
+        s_params = 'outputs/online/SingleStreamAppParams.pkl'
 
     # plot
     plot_data(losss, accuracies, s_plots)

@@ -42,9 +42,9 @@ def main():
             dataset_sizes, batch_size, sequence_len-1, window_size, criterion, 
             optimizer, max_epochs, gpu)
     # plot
-    plot_data(losss, accuracies, 'outputs/TwoStreamPlots.png')
+    plot_data(losss, accuracies, 'outputs/online/TwoStreamPlots.png')
     # save network
-    torch.save(net.state_dict(), 'outputs/TwoStreamParams.pkl')
+    torch.save(net.state_dict(), 'outputs/online/TwoStreamParams.pkl')
 
 if __name__ == '__main__':
     main()
