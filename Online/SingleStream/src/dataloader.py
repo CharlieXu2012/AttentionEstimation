@@ -11,12 +11,13 @@ class FlowDataset(Dataset):
     Args:
         labels_path (string):   path to text file with annotations
         sequence_len (int):     length of video clip
+        window_size (int):      sliding window size
         transform (callable):   transform to be applied on video sequence
 
     Returns:
         torch.utils.data.Dataset:   dataset object
     """ 
-    def __init__(self, labels_path, sequence_len, transform=None):
+    def __init__(self, labels_path, sequence_len, window_size, transform=None):
         # read video paths and labels
         with open(labels_path, 'r') as f:
             data = f.read()
@@ -26,6 +27,7 @@ class FlowDataset(Dataset):
         
         self.data = data
         self.sequence_len = sequence_len
+        self.window_size = window_size
         self.transform = transform
         self.cap = cv2.VideoCapture()
 
@@ -71,6 +73,11 @@ class FlowDataset(Dataset):
             X = self.transform(X)
         # reformat [numSeqs x numChannels x Height x Width]
         X = np.transpose(X, (0,3,1,2))
+        # sliding window
+        indexes = np.arange(self.window_size)[None, :] \
+                + np.range(self.sequence_len-self.window_size+1)[:, None]
+        print(indexes.shape)
+        print('Hello World')
         # store in sample
         sample = {'X': X, 'y': y}
         return sample
@@ -81,12 +88,13 @@ class AppearanceDataset(Dataset):
     Args:
         labels_path (string):   path to text file with annotations
         sequence_len (int):     length of video clip
+        window_size (int):      size of sliding window
         transform (callable):   transform to be applied on video sequence
         
     Returns:
         torch.utils.data.Dataset:   dataset object
     """
-    def __init__(self, labels_path, sequence_len, transform=None):
+    def __init__(self, labels_path, sequence_len, window_size, transform=None):
         # read video paths and labels
         with open(labels_path, 'r') as f:
             data = f.read()
@@ -96,6 +104,7 @@ class AppearanceDataset(Dataset):
         
         self.data = data
         self.sequence_len = sequence_len
+        self.window_size = window_size
         self.transform = transform
         self.cap = cv2.VideoCapture()
     
@@ -124,6 +133,10 @@ class AppearanceDataset(Dataset):
             X = self.transform(X)
         # reformat [numSeqs x numChannels x Height x Width]
         X = np.transpose(X, (0,3,1,2))
+        # sliding window
+        indexes = np.arange(self.window_size)[None, :] \
+                + np.arange(self.sequence_len-self.window_size+1)[:, None]
+        X = X[indexes]
         # store in sample
         sample = {'X': X, 'y': y}
         return sample
@@ -312,8 +325,8 @@ def count_labels(data_path):
 
     return counts
 
-def get_loaders(train_path, valid_path, batch_size, sequence_len, flow,
-        num_workers, gpu):
+def get_loaders(train_path, valid_path, batch_size, sequence_len, window_size,
+        flow, num_workers, gpu):
     """Return dictionary of torch.utils.data.DataLoader.
 
     Args:
@@ -322,6 +335,7 @@ def get_loaders(train_path, valid_path, batch_size, sequence_len, flow,
         batch_size (int):       number of instances in batch
         sequence_len (int):     number of frames to keep in video (counting
                                     from last frame)
+        window_size (int):      size of sliding window
         flow (bool):            use flow or appearance dataset
         num_workers (int):      number of subprocesses used for data loading
         gpu (bool):             presence of gpu
@@ -357,27 +371,35 @@ def get_loaders(train_path, valid_path, batch_size, sequence_len, flow,
     else:
         datasets = {
                 'Train': AppearanceDataset(train_path, sequence_len,
-                    data_transforms['Train']),
+                    window_size, data_transforms['Train']),
                 'Valid': AppearanceDataset(valid_path, sequence_len,
-                    data_transforms['Valid'])
+                    window_size, data_transforms['Valid'])
                 }
 
     # dataset sizes
     dataset_sizes = {'Train': len(datasets['Train']),
                      'Valid': len(datasets['Valid'])}
 
-    # add weighted sampler since unbalanced dataset
-    c = count_labels(train_path)
-    weights = np.zeros(dataset_sizes['Train'])
-    weights[: c[0]] = c[1] / c[0]
-    weights[c[0]: c[0]+c[1]] = 1
-    weights[c[0]+c[1]:c[0]+c[1]+c[2]] = c[1] / c[2]
-    weights[c[0]+c[1]+c[2]:] = c[1] / c[3]
-
+    #TODO add back weighted sampler
+#    # add weighted sampler since unbalanced dataset
+#    c = count_labels(train_path)
+#    weights = np.zeros(dataset_sizes['Train'])
+#    weights[: c[0]] = c[1] / c[0]
+#    weights[c[0]: c[0]+c[1]] = 1
+#    weights[c[0]+c[1]:c[0]+c[1]+c[2]] = c[1] / c[2]
+#    weights[c[0]+c[1]+c[2]:] = c[1] / c[3]
+#
+#    # create dataloders
+#    dataloaders = {
+#            'Train': DataLoader(datasets['Train'], batch_size=batch_size,
+#                sampler=WeightedRandomSampler(weights, dataset_sizes['Train'])),
+#            'Valid': DataLoader(datasets['Valid'], batch_size=batch_size,
+#                shuffle=True)
+#            }
     # create dataloders
     dataloaders = {
             'Train': DataLoader(datasets['Train'], batch_size=batch_size,
-                sampler=WeightedRandomSampler(weights, dataset_sizes['Train'])),
+                shuffle=True),
             'Valid': DataLoader(datasets['Valid'], batch_size=batch_size,
                 shuffle=True)
             }
@@ -395,10 +417,13 @@ def main():
     test_path = 'data/test_data.txt'
     # hyper-parameters
     batch_size = 2
-    sequence_len = 24  # counting backwards from last frame
+    sequence_len = 50  # counting backwards from last frame
+    window_size = 5
+    flow = False
     
     dataloaders, dataset_sizes = get_loaders(train_path, valid_path, 
-            batch_size, sequence_len, flow=True, num_workers=0, gpu=False)
+            batch_size, sequence_len, window_size, flow, num_workers=0, 
+            gpu=False)
     print('Dataset Sizes:')
     print(dataset_sizes)
 
@@ -415,10 +440,11 @@ def main():
 
     train_batch = next(iter(dataloaders['Valid']))
     data, labels = train_batch['X'], train_batch['y']
+    data = data.view(-1, window_size, 3, 224, 224)
     print('data:', data.shape)
     print('labels:', labels.shape)
-    grid = utils.make_grid(data[0])
-    imshow(grid)
+#    grid = utils.make_grid(data[0])
+#    imshow(grid)
 
 if __name__ == '__main__':
     main()
