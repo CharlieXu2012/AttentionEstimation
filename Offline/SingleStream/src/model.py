@@ -37,7 +37,7 @@ class SingleStream(nn.Module):
                     )
         elif model is 'VGGNet19':
             self.cnn = models.vgg19_bn(pretrained)
-            num_fts = self.cnn.chttps://www.youtube.com/watch?v=PH4JPgVD2SM&index=10&list=PL7CB028E4D77178CEhttps://www.youtube.com/watch?v=PH4JPgVD2SM&index=10&list=PL7CB028E4D77178CElassifier[3].in_features
+            num_fts = self.cnn.classifier[3].in_features
             self.cnn.classifier = nn.Sequential(
                     *list(self.cnn.classifier.children())[:-4]
                     )
