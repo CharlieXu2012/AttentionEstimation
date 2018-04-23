@@ -16,23 +16,19 @@ def main():
     valid_path = 'data/valid_data.txt'
     test_path = 'data/test_data.txt'
     batch_size = 32
-    sequence_len = 100  # counting backwards from last frame
-    sample_rate = 5
-    flow = False
     num_workers = 2
     # network parameters
     model = 'VGGNet19'
     rnn_hidden = 512
     rnn_layers = 2
     # training parameters
-    max_epochs = 1
+    max_epochs = 100
     learning_rate = 1e-4
     criterion = nn.CrossEntropyLoss()
 
     # create dataloaders
     dataloaders, dataset_sizes = get_loaders(train_path, valid_path,
-            batch_size, sequence_len, sample_rate, flow, num_workers,
-            gpu=True)
+            batch_size, num_workers, gpu=True)
     print('Dataset Sizes:')
     print(dataset_sizes)
     # create network object and optimizer

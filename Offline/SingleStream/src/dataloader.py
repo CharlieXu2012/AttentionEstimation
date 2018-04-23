@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import cv2
 import numbers
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
@@ -34,7 +35,6 @@ class AppearanceDataset(Dataset):
         y = int(self.data[idx, 1]) - 1
         video_path = 'data/offline/' + self.data[idx, 0]
         video_path = video_path[:-3] + 'npy'
-        print(video_path)
         # load video
         X = np.load(video_path)
         # transform data
@@ -281,12 +281,14 @@ def main():
     batch_size = 2
     num_workers = 2
 
+    # get dataloaders
     dataloaders, dataset_sizes = get_loaders(train_path, valid_path, 
             batch_size, num_workers, gpu=True)
     print('Dataset Sizes:')
     print(dataset_sizes)
 
     def imshow(grid):
+        """Display grid."""
         grid = grid.numpy().transpose((1,2,0))
         mean = np.array([0.485, 0.456, 0.406])
         std = np.array([0.229, 0.224, 0.225])
@@ -297,8 +299,9 @@ def main():
         plt.tight_layout()
         plt.show()
 
-    train_batch = next(iter(dataloaders['Valid']))
-    data, labels = train_batch['X'], train_batch['y']
+    # get first mini-batch
+    train_batch = next(iter(dataloaders['Train']))
+    data, labels = mini_batch['X'], mini_batch['y']
     print('data:', data.shape)
     print('labels:', labels.shape)
     grid = utils.make_grid(data[0], nrow=10)
