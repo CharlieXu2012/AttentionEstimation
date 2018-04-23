@@ -20,6 +20,12 @@ def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len,
         opitimier (torch.optim):    optimization algorithm.
         max_epochs (int):           max number of epochs used for training
         gpu (bool):                 gpu availability
+    
+    Returns:
+        torchvision.models:     best trained model
+        float:                  best validation accuracy
+        dictionary:             training and validation losses
+        dictionary:             training and validation accuracy
     """
     # start timer
     start = time.time()
