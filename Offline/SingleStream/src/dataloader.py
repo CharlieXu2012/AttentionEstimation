@@ -31,7 +31,6 @@ class AppearanceDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        # create list to hold video data
         y = int(self.data[idx, 1]) - 1
         video_path = 'data/offline/' + self.data[idx, 0]
         video_path = video_path[:-3] + 'npy'
