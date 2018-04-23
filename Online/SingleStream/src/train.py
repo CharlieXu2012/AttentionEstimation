@@ -52,6 +52,7 @@ def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len,
                 # get the inputs
                 inputs, labels = data['X'], data['y']
                 # reshape [numSeq, batchSize, numChannels, Height, Width]
+                inputs = inputs.view(-1, window_size, 3, 224, 224)
                 inputs = inputs.transpose(0,1)
                 # wrap in Variable
                 if gpu:
@@ -63,31 +64,24 @@ def train_network(net, dataloaders, dataset_sizes, batch_size, sequence_len,
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
-                # sequence statistics
-                sequence_loss = 0
-                # slider window through sequence
-                for i in range(sequence_len - window_size):
-                    inp = inputs[i:i+window_size]
-                    # pass through network
-                    outputs = net.forward(inputs)
-                    # loss + predicted
-                    sequence_loss += criterion(outputs, labels)
-                    _, pred = torch.max(outputs.data, 1)
-                    running_correct += torch.sum(pred == labels.data)
-
-                # average loss
-                sequence_loss /= (sequence_len-window_size)
+                # pass through network
+                outputs = net.forward(inputs)
+                # loss + predicted
+                loss = criterion(outputs, labels)
+                _, pred = torch.max(outputs.data, 1)
+                correct = torch.sum(pred == labels.data)
                 # back-prop + optimize in training phase
                 if phase == 'Train':
                     sequence_loss.backward()
                     optimizer.step()
 
                 # statistics
-                running_loss += sequence_loss.data[0]
+                running_loss += loss.data[0]
+                running_correct += correct
 
             epoch_loss = running_loss * batch_size / dataset_sizes[phase]
             epoch_acc = running_correct \
-                    / (dataset_sizes[phase] * (sequence_len - window_size))
+                    / (dataset_sizes[phase] * (sequence_len - window_size + 1))
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
             # store stats

@@ -14,23 +14,23 @@ def main():
     gpu = torch.cuda.is_available()
     train_path = 'data/train_data.txt'
     valid_path = 'data/valid_data.txt'
-    batch_size = 32
+    batch_size = 2
     sequence_len = 50
+    window_size = 5
     flow = False
     num_workers = 2
     # network parameters
     model = 'VGGNet19'
     rnn_hidden = 512
-    rnn_layers = 2
+    rnn_layers = 1
     # training parameters
-    max_epochs = 200
+    max_epochs = 1
     learning_rate = 1e-4
-    window_size = 20
     criterion = nn.CrossEntropyLoss()
 
     # get loaders
     dataloaders, dataset_sizes = get_loaders(train_path, valid_path, batch_size,
-            sequence_len, flow, num_workers, gpu)
+            sequence_len, window_size, flow, num_workers, gpu)
 
     # create network and optimizer
     net = SingleStream(model, rnn_hidden, rnn_layers, pretrained=True)
