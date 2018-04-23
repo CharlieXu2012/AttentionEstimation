@@ -3,3 +3,4 @@ data/negative
 data/offline
 **__pycache__/
 *.swp
+outputs/
