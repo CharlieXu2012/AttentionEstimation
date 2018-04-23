@@ -1,5 +1,6 @@
 data/positive
 data/negative
+data/online
 data/offline
 **__pycache__/
 *.swp
