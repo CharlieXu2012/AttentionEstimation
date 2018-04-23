@@ -3,7 +3,9 @@ import os
 import numpy as np
 import cv2
 
-def offline_format(dataset, sample_rate):
+MAX_COUNT = 1750 * 2
+
+def offline_format(dataset, sample_rate, count):
     """Read videos in dataset and save to disk as ndarrays.
     
     Args:
@@ -34,8 +36,11 @@ def offline_format(dataset, sample_rate):
         X = X[::sample_rate]
         video_path = video_path[:5] + 'offline/' + video_path[5:-3] + 'npy'
         np.save(video_path, X)
+        sys.stdout.write('\rCompletion: %d%%' % int(count/MAX_COUNT*100))
+        sys.stdout.flush()
+        count += 1
 
-def online_format(dataset, sequence_start):
+def online_format(dataset, sequence_start, count):
     """Read videos in dataset and save processed videos for online training
     to disk as ndarrays.
 
@@ -66,6 +71,9 @@ def online_format(dataset, sequence_start):
         X = np.array(X)
         video_path = video_path[:5] + 'online/' + video_path[5:-3] + 'npy'
         np.save(video_path, X)
+        sys.stdout.write('\rCompletion: %d%%' % int(count/MAX_COUNT))
+        sys.stdout.flush()
+        count += 1
 
 def main():
     """Main Function."""
@@ -83,13 +91,12 @@ def main():
     sample_rate = 5
     sequence_start = 50  # start online sequence at frame 50
 
+    count = 0
     datasets = [train_data, valid_data, test_data]
     print('Processing Videos:')
-    for i, dataset in enumerate(datasets):
-        sys.stdout.write('\rCompletion: %d%%' % i)
-        sys.stdout.flush()
-        offline_format(dataset, sample_rate)
-        online_format(dataset, sequence_start)
+    for dataset in datasets:
+        offline_format(dataset, sample_rate, count)
+        online_format(dataset, sequence_start, count)
 
 if __name__ == '__main__':
     main()
