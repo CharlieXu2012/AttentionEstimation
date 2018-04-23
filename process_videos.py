@@ -38,6 +38,7 @@ def offline_format(dataset, sample_rate, count):
         np.save(video_path, X)
         sys.stdout.write('\rCompletion: %d%%' % int(count/MAX_COUNT*100))
         sys.stdout.flush()
+        print(count)
         count += 1
 
 def online_format(dataset, sequence_start, count):
@@ -71,16 +72,19 @@ def online_format(dataset, sequence_start, count):
         X = np.array(X)
         video_path = video_path[:5] + 'online/' + video_path[5:-3] + 'npy'
         np.save(video_path, X)
-        sys.stdout.write('\rCompletion: %d%%' % int(count/MAX_COUNT))
+        sys.stdout.write('\rCompletion: %d%%' % int(count/MAX_COUNT*100))
         sys.stdout.flush()
+        print(count)
         count += 1
 
 def main():
     """Main Function."""
     # create directories
+    os.system('rm -fr data/offline')
     os.system('mkdir data/offline')
     os.system('mkdir data/offline/positive')
     os.system('mkdir data/offline/negative')
+    os.system('rm -fr data/online')
     os.system('mkdir data/online')
     os.system('mkdir data/online/positive')
     os.system('mkdir data/online/negative')
